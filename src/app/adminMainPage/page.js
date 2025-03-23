@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Suspense } from "react";
 
 export default function AdminMainPage() {
   const [query, setQuery] = useState("");
@@ -59,6 +60,7 @@ export default function AdminMainPage() {
   };
 
   return (
+    <Suspense fallback={<div>Loading...</div>}>
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-purple-600 p-4">
       <div className="absolute top-1/6 bg-white shadow-xl rounded-lg p-6 w-full max-w-md text-center">
         <h1 className="text-3xl font-bold text-gray-800 mb-4">Search any song...</h1>
@@ -84,5 +86,6 @@ export default function AdminMainPage() {
         </Button>
       </div>
     </div>
+    </Suspense>
   );
 }

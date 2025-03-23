@@ -54,6 +54,7 @@ export default function SearchResultsPage() {
   }
 
   return (
+    <Suspense fallback={<div>Loading...</div>}>
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-purple-600 p-4">
       <button
         onClick={() => router.push("/adminMainPage")}
@@ -87,5 +88,6 @@ export default function SearchResultsPage() {
         </ul>
       </div>
     </div>
+    </Suspense>
   );
 }
