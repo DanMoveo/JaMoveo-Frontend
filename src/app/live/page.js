@@ -6,8 +6,6 @@ export default function LivePage() {
   const [songDetails, setSongDetails] = useState(null);
   const [isAutoScrollActive, setIsAutoScrollActive] = useState(false);
 
-  localStorage.getItem("newUser")
-
   useEffect(() => {
     // Retrieve the song details from sessionStorage
     const songData = sessionStorage.getItem("songDetails");

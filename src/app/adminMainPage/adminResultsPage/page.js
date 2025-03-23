@@ -1,21 +1,27 @@
-"use client";
+"use client";  // ✅ Ensure the entire page is a Client Component
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { socket } from "@/app/socket";
 import { roomId } from "@/app/playerMainPage/page";
 import { Suspense } from "react";
 
-export default function SearchResultsPage() {
+function SearchResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const query = searchParams.get("query");
-  const results = searchParams.get("results");
+  const results = searchParams.get("results") || "[]";
+
   console.log("query:", query, "results:", results);
 
-  const parsedResults = JSON.parse(results || "[]");
+  let parsedResults = [];
+  try {
+    parsedResults = JSON.parse(results);
+  } catch (error) {
+    console.error("Failed to parse results:", error);
+  }
 
-  console.log('roomId:', roomId)
+  console.log("roomId:", roomId);
 
   socket.emit("joinRoom", { roomId });
 
@@ -25,9 +31,7 @@ export default function SearchResultsPage() {
     console.log("encodedSong", encodedSong);
 
     const res = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_BASE_URL
-      }/api/search/playSong?query=${encodeURIComponent(song)}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/search/playSong?query=${encodeURIComponent(song)}`
     );
     const data = await res.json();
 
@@ -44,10 +48,7 @@ export default function SearchResultsPage() {
       query: query,
       results: JSON.stringify(parsedResults[index]), // Convert array to a string
     });
-    console.log("song.image:");
-    console.log("index:", index);
-    console.log("results:", results);
-    console.log("typeof results:", typeof results);
+
     console.log("searchParams:", searchParams);
     console.log("results[index]:", parsedResults[index]);
 
@@ -55,7 +56,6 @@ export default function SearchResultsPage() {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-purple-600 p-4">
       <button
         onClick={() => router.push("/adminMainPage")}
@@ -73,7 +73,7 @@ export default function SearchResultsPage() {
             <li
               key={index}
               className="border p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-100 transition-all"
-              onClick={() => handleSelectSong(song.url, index, song.image)}
+              onClick={() => handleSelectSong(song.url, index)}
             >
               <h2 className="font-semibold text-lg">{song.title}</h2>
               <p className="text-sm text-gray-600">Artist: {song.artist}</p>
@@ -89,6 +89,14 @@ export default function SearchResultsPage() {
         </ul>
       </div>
     </div>
+  );
+}
+
+// ✅ Wrap the entire page in Suspense inside `page.js`
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchResultsPage />
     </Suspense>
   );
 }
