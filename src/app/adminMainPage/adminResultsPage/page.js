@@ -2,7 +2,6 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { socket } from "@/app/socket";
-import { roomId } from "@/app/playerMainPage/page";
 import { Suspense } from "react";
 
 function SearchResultsPage() {
@@ -21,38 +20,27 @@ function SearchResultsPage() {
     console.error("Failed to parse results:", error);
   }
 
-  console.log("roomId:", roomId);
+  socket.emit("joinRoom", { roomId: "BandSession" });
 
-  socket.emit("joinRoom", { roomId });
-
-  async function handleSelectSong(song, index) {
-    console.log("songURL:", song);
-    const encodedSong = encodeURIComponent(JSON.stringify(song));
-    console.log("encodedSong", encodedSong);
-
+  async function handleSelectSong(songUrl, index) {
+    console.log("Selected song URL:", songUrl);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/search/playSong?query=${encodeURIComponent(song)}`
+      `${
+        process.env.NEXT_PUBLIC_BASE_URL
+      }/api/search/playSong?query=${encodeURIComponent(songUrl)}`
     );
     const data = await res.json();
 
     if (data.imageUrl && !data.imageUrl.startsWith("https://")) {
       data.imageUrl = "https://www.tab4u.com" + data.imageUrl;
     }
-    console.log("data:", data);
+    console.log("Fetched song data:", data);
 
-    socket.emit("songPicked", { roomId, song });
+    socket.emit("songPicked", { roomId: "BandSession", song: data });
 
     sessionStorage.setItem("songDetails", JSON.stringify(data));
 
-    const searchParams = new URLSearchParams({
-      query: query,
-      results: JSON.stringify(parsedResults[index]), // Convert array to a string
-    });
-
-    console.log("searchParams:", searchParams);
-    console.log("results[index]:", parsedResults[index]);
-
-    router.push(`/live?${searchParams.toString()}`);
+    router.push("/live");
   }
 
   return (
@@ -67,7 +55,6 @@ function SearchResultsPage() {
         <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
           Search Results for "{query}"
         </h1>
-
         <ul className="p-2 space-y-4">
           {parsedResults.map((song, index) => (
             <li
@@ -92,7 +79,6 @@ function SearchResultsPage() {
   );
 }
 
-// ✅ Wrap the entire page in Suspense inside `page.js`
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

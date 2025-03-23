@@ -5,39 +5,38 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-export const roomId ='BandSession'
+export const roomId = "BandSession";
 
 export default function UserMainPage() {
-  const [songSelected, setSongSelected] = useState(false);
+  const [songData, setSongData] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
+    console.log("UserMainPage mounted. Joining room:", roomId);
+    socket.emit("joinRoom", { roomId: "BandSession" });
 
-    const userId = localStorage.getItem('userId');
-    // Listen for messages from the WebSocket server
-    console.log('working..')
-    socket.emit("joinRoom", { roomId });
-    console.log('working2..')
-    
-      socket.on("songSelected", (songSelected) => {
-        console.log('isSongSelected?', songSelected)
-        setSongSelected(songSelected)
-      })
-  
+    const handleSongSelected = (data) => {
+      console.log("Received songSelected event:", data);
+      if (data.songSelected) {
+        setSongData(data);
+      }
+    };
 
-  
-    
-    // Clean up the WebSocket connection when the component is unmounted
+    socket.on("songSelected", handleSongSelected);
+
+    // Remove only the event listener on unmount
     return () => {
-      socket.close();
+      socket.off("songSelected", handleSongSelected);
     };
   }, []);
 
   useEffect(() => {
-    if (songSelected) {
+    if (songData) {
+      // Save song details in session storage for the /live page to use
+      sessionStorage.setItem("songDetails", JSON.stringify(songData.song));
       router.push("/live");
     }
-  }, [songSelected, router]);
+  }, [songData, router]);
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-gray-900">
