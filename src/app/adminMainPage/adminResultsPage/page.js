@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { socket } from "@/app/socket";
 import { roomId } from "@/app/playerMainPage/page";
+import { Suspense } from "react";
 
 export default function SearchResultsPage() {
   const searchParams = useSearchParams();
